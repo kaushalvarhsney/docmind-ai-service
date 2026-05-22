@@ -1,15 +1,14 @@
 spring:
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
-      - org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
   application:
     name: docmind-ai-service
-
   # Azure OpenAI Configuration
   ai:
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
     azure:
       openai:
         api-key: ${AZURE_OPENAI_KEY}
@@ -19,6 +18,9 @@ spring:
             deployment-name: gpt-4o
             temperature: 0.7
             max-tokens: 1000
+        embedding:
+          options:
+            deployment-name: text-embedding-ada-002
 
   # Database Configuration
   datasource:
@@ -60,7 +62,7 @@ resilience4j:
         sliding-window-size: 10
         failure-rate-threshold: 50
         wait-duration-in-open-state: 30s
-        permitted-calls-in-half-open-state: 3
+        permitted-number-of-calls-in-half-open-state: 3
         slow-call-rate-threshold: 80
         slow-call-duration-threshold: 5s
   retry:
