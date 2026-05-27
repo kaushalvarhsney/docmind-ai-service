@@ -49,22 +49,58 @@ public class ChatService {
         // Step 3 — Build prompt with context
         String systemPrompt;
         if (!relevantDocs.isEmpty()) {
+            // Show which documents context came from
+            String docNames = relevantDocs.stream()
+                    .map(doc -> (String) doc.getMetadata()
+                            .getOrDefault("fileName", "Unknown"))
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+
             systemPrompt = """
-                You are DocMind — an intelligent document assistant.
-                Answer the user's question based ONLY on the 
-                context provided below.
-                If the answer is not in the context, say 
-                "I could not find this information in the 
-                uploaded documents."
-                
-                Context from uploaded documents:
-                """ + context;
+                    You are DocMind — an intelligent
+                    document assistant.
+                    Answer the user's question based
+                    on the context provided below.
+                    Context comes from these documents:
+                    """ + docNames + """
+                    
+                    If summarisation is requested —
+                    summarise all context provided.
+                    If specific info not found —
+                    say so honestly.
+                    
+                    Context:
+                    """ + context;
         } else {
-            systemPrompt = """
-                You are DocMind — an intelligent document assistant.
-                No relevant documents were found for this question.
-                Please inform the user to upload relevant documents first.
-                """;
+            // Fetch ALL chunks for summary requests
+            List<Document> allDocs = vectorStore
+                    .similaritySearch(
+                            SearchRequest.builder()
+                                    .query(question)
+                                    .topK(10)
+                                    .similarityThreshold(0.0)
+                                    .build()
+                    );
+
+            if (!allDocs.isEmpty()) {
+                String allContext = allDocs.stream()
+                        .map(Document::getText)
+                        .collect(Collectors.joining("\n\n"));
+
+                systemPrompt = """
+                        You are DocMind — an intelligent
+                        document assistant.
+                        Summarise the following content
+                        from uploaded documents:
+                        """ + allContext;
+            } else {
+                systemPrompt = """
+                        You are DocMind — an intelligent
+                        document assistant.
+                        No documents found.
+                        Ask user to upload documents first.
+                        """;
+            }
         }
 
         // Step 4 — Call GPT-4o with context
