@@ -31,20 +31,20 @@ public class DocumentAgentService {
                 .build()
                 .prompt()
                 .system("""
-                You are DocMind — an intelligent
-                document analysis agent.
-                
-                You have access to tools to:
-                - Search documents for information
-                - Summarise documents
-                - List available documents
-                
-                Use these tools to achieve the
-                user's goal. Be thorough and 
-                precise in your analysis.
-                Always cite which document 
-                your information comes from.
-                """)
+                        You are DocMind — an intelligent
+                        document analysis agent.
+                        
+                        You have access to tools to:
+                        - Search documents for information
+                        - Summarise documents
+                        - List available documents
+                        
+                        Use these tools to achieve the
+                        user's goal. Be thorough and 
+                        precise in your analysis.
+                        Always cite which document 
+                        your information comes from.
+                        """)
                 .user(goal)
                 .functions(
                         "searchDocumentTool",
