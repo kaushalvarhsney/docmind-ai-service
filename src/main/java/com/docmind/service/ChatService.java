@@ -84,7 +84,14 @@ public class ChatService {
 
             if (!allDocs.isEmpty()) {
                 String allContext = allDocs.stream()
-                        .map(Document::getText)
+                        .map(doc -> {
+                            String fileName = (String) doc
+                                    .getMetadata()
+                                    .getOrDefault(
+                                            "fileName", "Unknown");
+                            return "[Source: " + fileName + "]\n"
+                                    + doc.getText();
+                        })
                         .collect(Collectors.joining("\n\n"));
 
                 systemPrompt = """
@@ -115,14 +122,22 @@ public class ChatService {
                 .getText();
 
         log.info("RAG answer generated successfully!");
-        return new ChatResponse(answer, "SUCCESS");
+
+        List<String> sources = relevantDocs.stream()
+                .map(doc -> (String) doc.getMetadata()
+                        .getOrDefault("fileName", "Unknown"))
+                .distinct()
+                .collect(Collectors.toList());
+
+        return new ChatResponse(answer, "SUCCESS", sources);
     }
 
     public ChatResponse fallback(String question, Exception ex) {
         log.error("Circuit breaker triggered: {}", ex.getMessage());
         return new ChatResponse(
                 "Service temporarily unavailable. Please try again.",
-                "FALLBACK"
+                "FALLBACK",
+                List.of()
         );
     }
 }
