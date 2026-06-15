@@ -43,8 +43,9 @@ public class ChatService {
 
         // Step 2 — Build context from chunks
         String context = relevantDocs.stream()
-                .map(Document::getText)
-                .collect(Collectors.joining("\n\n"));
+                .map(doc -> (String) doc.getMetadata()
+                        .getOrDefault("fileName", "Unknown"))
+                .distinct().collect(Collectors.joining());
 
         // Step 3 — Build prompt with context
         String systemPrompt;
@@ -64,7 +65,7 @@ public class ChatService {
                     Context comes from these documents:
                     """ + docNames + """
                     
-                    If summarisation is requested —
+                    If summarization is requested —
                     summarise all context provided.
                     If specific info not found —
                     say so honestly.
