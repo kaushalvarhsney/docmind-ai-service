@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatResponse {
-    private String answer;
+public class AgentResponse {
+    private String result;
     private String status;
-    private List<String> sources;
 }
